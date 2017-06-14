@@ -1,10 +1,192 @@
-<html>
+<!doctype html>
+
+<html lang="en" manifest="cubeedit.appcache">
 <head>
-		<meta charset="utf-8">
-		
-		<title>Test</title>
+	<meta charset="utf-8">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="manifest" href="manifest.json">
+
+
+	<title>CubeEdit</title>
+	<link rel="icon" href="/favicon.png" type="image/png">
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+	<meta name="description" content="LED-Cube animation editor">
+	<meta name="author" content="JgamerXD">
+
+
+
+	<script id=basic-vs type="x-shader/x-vertex">//#version 300 es
+		attribute vec3 aVertexPos;
+		attribute vec3 aVertexNormal;
+
+		uniform vec4 uColor;
+
+		uniform mat4 uModelViewMatrix;
+		uniform mat4 uProjectionMatrix;
+
+		varying vec4 vColor;
+
+		void main(void) {
+			gl_Position = uProjectionMatrix * uModelViewMatrix  * vec4(aVertexPos, 1.0);
+			float cosTheta = clamp(
+				dot(aVertexNormal,
+				 vec3(uModelViewMatrix[0].z,uModelViewMatrix[1].z,uModelViewMatrix[2].z))
+				 ,0.0,1.0)/2.0+0.5;
+			vColor = vec4(uColor.rgb * cosTheta,uColor.a);
+		}
+	</script>
+
+	<script id=basic-fs type="x-shader/x-fragment">//#version 300 es
+		precision mediump float;
+
+		varying vec4 vColor;
+
+		//out vec4 fragColor;
+
+		void main(void) {
+			gl_FragColor = vColor;
+		}
+	</script>
+
+
+
+	<script id=cubemap-vs type="x-shader/x-vertex">//#version 300 es
+		attribute vec3 aVertexPos;
+
+		uniform mat4 uModelViewMatrix;
+		uniform mat4 uProjectionMatrix;
+
+		varying vec3 vTexCoords;
+
+		void main(void) {
+			gl_Position = uProjectionMatrix * uModelViewMatrix  * vec4(aVertexPos, 1.0);
+			vTexCoords = aVertexPos;
+		}
+	</script>
+
+	<script id=cubemap-fs type="x-shader/x-fragment">//#version 300 es
+		precision mediump float;
+
+		varying vec3 vTexCoords;
+
+		uniform samplerCube uSkybox;
+
+		void main(void) {
+			gl_FragColor = textureCube(uSkybox, vTexCoords);
+		}
+	</script>
+
 </head>
 <body>
-Hello World
+	<script src="js/3rdparty/jquery-3.2.1.js"></script>
+
+
+	<div class="row">
+		<div class="col-4">
+
+			<canvas id="3dview" class="square" style="width:100%; height:33vh"></canvas>
+
+
+
+			<hr>
+
+			<div class="row ctext">Frame: <span id="currentFrame">0</span> / <span id="maxFrame">0</span></div>
+			<div class="eicontrol">
+				<button type="button" title="previous frame" onclick="{var r = $('#FIRange')[0]; r.stepDown(); r.onchange();}">
+					<i class="fa fa-arrow-left fa-3x" style="color:black;"></i>
+				</button>
+				<input type="range" id="FIRange" title="current frame" min=0 value="0" onchange="{lf(Number(this.value));}" style="flex:1 1;">
+				<button type="button" title="next frame" onclick="{var r = $('#FIRange')[0]; r.stepUp(); r.onchange();}">
+					<i class="fa fa-arrow-right fa-3x" style="color:black;"></i>
+				</button>
+			</div>
+
+			<div class="control">
+				<button type="button" title="clear frame" onclick="clearFrame()">
+					<i class="fa fa-eraser fa-3x" style="color:maroon;"></i>
+				</button>
+				<button type="button" title="remove frame" onclick="cutFrame()">
+					<i class="fa fa-scissors fa-3x" style="color:darkSlateGray;"></i>
+				</button>
+				<button type="button" title="insert frame" onclick="insertFrame()">
+					<i class="fa fa-plus fa-3x" style="color:darkOliveGreen;"></i>
+				</button>
+				<button type="button" title="duplicate frame" onclick="duplicateFrame()">
+					<i class="fa fa-copy fa-3x" style="color:black;"></i>
+				</button>
+			</div>
+		</div>
+
+		<div class="col-6">
+			<div class="row">
+				<div class="col-6">
+					<div class="eicontrol">
+						<button type="button" title="decrement X-index" onclick="{var r = $('#XEIRange')[0]; r.stepDown(); r.onchange();}">
+							<i class="fa fa-minus-circle fa-3x" style="color:red;"></i>
+						</button>
+						<input type="range" id="XEIRange" title="X-index" min=0 value="0" onchange="editIndexX=Number(this.value); notifyCubeDataChanged()"	style="flex:1 1;">
+						<button type="button" title="increment X-index" onclick="{var r = $('#XEIRange')[0]; r.stepUp(); r.onchange();}">
+							<i class="fa fa-plus-circle fa-3x" style="color:red"></i>
+						</button>
+					</div>
+
+					<div class="eicontrol">
+						<button type="button" title="decrement Y-index" onclick="{var r = $('#YEIRange')[0]; r.stepDown(); r.onchange();}">
+							<i class="fa fa-minus-circle fa-3x" style="color:green;"></i>
+						</button>
+						<input type="range" id="YEIRange" title="Y-index" min=0 value="0" onchange="editIndexY=Number(this.value); notifyCubeDataChanged()" style="flex:1 1;">
+						<button type="button" title="inecrement Y-index" onclick="{var r = $('#YEIRange')[0]; r.stepUp(); r.onchange();}">
+							<i class="fa fa-plus-circle fa-3x"  style="color:green;"></i>
+						</button>
+					</div>
+
+					<div class="eicontrol">
+						<button type="button" title="decrement Z-index" onclick="{var r = $('#ZEIRange')[0]; r.stepDown(); r.onchange();}">
+							<i class="fa fa-minus-circle fa-3x" style="color:blue;"></i>
+						</button>
+						<input type="range" id="ZEIRange" title="Z-index" min=0 value="0" onchange="editIndexZ=Number(this.value); notifyCubeDataChanged()" style="flex:1 1;">
+						<button type="button" title="increment Z-index" onclick="{var r = $('#ZEIRange')[0]; r.stepUp(); r.onchange();}">
+							<i class="fa fa-plus-circle fa-3x" style="color:blue;"></i>
+						</button>
+					</div>
+				</div>
+				<div class="col-6 square editorContainer" style="border:10px solid green">
+					<canvas id="editXZCanvas" class="editorCanvas"></canvas>
+					<div id="editXZ" class="editor"></div>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-6 square editorContainer" style="border:10px solid red">
+					<canvas id="editYZCanvas" class="editorCanvas"></canvas>
+					<div id="editYZ" class="editor"></div>
+				</div>
+				<div class="col-6 square editorContainer" style="border:10px solid blue">
+					<canvas id="editXYCanvas" class="editorCanvas"></canvas>
+					<div id="editXY" class="editor"></div>
+				</div>
+			</div>
+
+		</div>
+
+
+		<div class="col-2">
+			<input type="color" id="currentColor" class="colorpicker">
+			<div id="palette" class="palette"></div>
+		</div>
+	</div>
+
+	<script src="js/3rdparty/gl-matrix-min.js"></script>
+	<script src="js/3rdparty/webgl-debug.js"></script>
+
+	<script src="js/cube.js"></script>
+	<script src="js/3dview.js"></script>
+	<script src="js/palette.js"></script>
+	<script src="js/editor.js"></script>
+
+	<script src="js/main.js"></script>
 </body>
 </html>

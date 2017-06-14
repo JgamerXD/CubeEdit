@@ -1,0 +1,6 @@
+CACHE MANIFEST
+index.html
+style.css
+/favicon.png
+js/*.js
+js/3rdparty/*.js
