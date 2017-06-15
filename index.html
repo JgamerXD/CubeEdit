@@ -117,6 +117,9 @@
 				<button type="button" title="duplicate frame" onclick="duplicateFrame()">
 					<i class="fa fa-copy fa-3x" style="color:black;"></i>
 				</button>
+				<button type="button" title="save" onclick="save()">
+					<i class="fa fa-save fa-3x" style="color:darkBlue;"></i>
+				</button>
 			</div>
 		</div>
 
@@ -178,6 +181,16 @@
 			<div id="palette" class="palette"></div>
 		</div>
 	</div>
+	<div id="savemodal" class="modal">n
+	<label>Filename:</label><input type="text" class="modalcontent">
+	<button type="button" title="save" onclick='download(JSON.stringify({frames:frames,cmap:cubeColormap}),$("#filename").val(),"application/json"); $("#savemodal")[0].display = "none";>
+	<i class="fa fa-save fa-3x" style="color:darkBlue;"></i> Save
+	</button>
+	
+
+
+	
+	
 
 	<script src="js/3rdparty/gl-matrix-min.js"></script>
 	<script src="js/3rdparty/webgl-debug.js"></script>
@@ -186,6 +199,7 @@
 	<script src="js/3dview.js"></script>
 	<script src="js/palette.js"></script>
 	<script src="js/editor.js"></script>
+	<script src="js/export.js"></script>	
 
 	<script src="js/main.js"></script>
 </body>
