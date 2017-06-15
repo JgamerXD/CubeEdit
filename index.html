@@ -184,8 +184,11 @@
 	<div id="savemodal" class="modal">
 		<div class="modalcontent">
 	<label>Filename:</label><input id="filename" type="text">
-	<button type="button" title="save" onclick='download(JSON.stringify({frames:frames,cmap:cubeColormap}),$("#filename").val(),"application/json"); $("#savemodal")[0].display = "none";'>
+	<button type="button" title="save" onclick='download(JSON.stringify({frames:frames,cmap:cubeColormap}),$("#filename").val(),"application/json"); $("#savemodal").hide()'>
 	<i class="fa fa-save fa-3x" style="color:darkBlue;"></i> Save
+	</button>
+	<button type="button" title="cancel" onclick='$("#savemodal").hide()'>
+	<i class="fa fa-close fa-3x" style="color:red;"></i> Cancel
 	</button>
 	</div>
 	
