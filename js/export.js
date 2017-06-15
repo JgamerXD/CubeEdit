@@ -15,8 +15,4 @@ function download(data, filename, type) {
             window.URL.revokeObjectURL(url);
         }, 0);
     }
-
-
-function readFile() {
-  
 }
