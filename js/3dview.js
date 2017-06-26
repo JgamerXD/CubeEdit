@@ -224,7 +224,7 @@ function handleTouchEnd(event) {
 
 function handleTouchMove(event) {
 
-	console.log("move touch "+changeViewTouch);
+	// console.log("move touch "+changeViewTouch);
   if (changeViewTouch == -1) {
     return;
   }
@@ -235,7 +235,7 @@ function handleTouchMove(event) {
 		  var newX = event.touches[t].clientX;
 		  var newY = event.touches[t].clientY;
 
-			console.log("moving");
+			// console.log("moving");
 
 		  var deltaX = newX - lastTouchX;
 
@@ -301,11 +301,18 @@ function initWebGL(canvas) {
 		"or it is not enabled by default.";
 	try {
 		gl = canvas.getContext("webgl");
+		if(!gl) {
+			gl = canvas.getContext("experimental-webgl");
+			alert("WebGL support is experimental, not everithing might work as expected!")
+		}
 		//gl = WebGLDebugUtils.makeDebugContext(gl, throwOnGLError, logAndValidate);
 	} catch (e) {
+		console.log("catch");
 		msg = "Error creating WebGL Context!: " + e.toString();
 	}
-
+	console.log("gl:");
+	console.log(gl);
+	console.log("/gl");
 	if (!gl) {
 		alert(msg);
 		throw new Error(msg);

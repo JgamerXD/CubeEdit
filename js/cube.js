@@ -11,7 +11,7 @@ var currentIndex;
 var currentFrame;
 
 function getIndex(x,y,z) {
-  return x + sizeX*y + sizeX*sizeY*z;
+  return x + sizeX*z + sizeX*sizeX*y; //Swapped y and z to match Hardware TODO: make option
 }
 
 var cubeColormap = [
@@ -77,11 +77,17 @@ function duplicateFrame() {
 }
 
 function newFrame() {
-  return new Uint8Array(sizeX*sizeY*sizeZ);
+  return (new Array(sizeX*sizeY*sizeZ)).fill(cubeClearColor);
+
 }
 
 function copyFrame(index) {
-  return new Uint8Array(frames[index]);
+  return Array.from(frames[index]);
+}
+
+function setFrame(frame)
+{
+  frames[currentIndex].fill(frame)
 }
 
 var cubeInitCallbacks = []
@@ -115,10 +121,21 @@ function initCube(sx,sy,sz) {
 
   editIndexZ=editIndexY=editIndexZ=0;
 
-  for (i = 0; i < cubeInitCallbacks.length; i++) {
+  for (var i = 0; i < cubeInitCallbacks.length; i++) {
     cubeInitCallbacks[i]();
   }
   updateFrameRange();
 
 
+}
+
+function lf(i) {
+  if(i<0 || i>=frames.length) {
+    console.log("invalid index");
+    return;
+  }
+
+  currentIndex = i;
+  currentFrame = frames[i];
+  notifyCubeDataChanged();
 }

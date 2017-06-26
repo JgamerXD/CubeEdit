@@ -2,6 +2,10 @@
     box-sizing: border-box;
 }
 
+body {
+  background-color: linen;
+}
+
 .row {
   width:100%;
   /*display: flex;*/
@@ -17,7 +21,7 @@
   float: left;
   padding: 5px;
 
-  
+
   /*border: 1px solid red;*/
 
   /*display: flex;
@@ -64,6 +68,28 @@
   clear: both;
 }
 /*html, body{height: 100%}*/
+button {
+  background-color: lightGray;
+  padding: 2px 8px 2px 8px;
+  border: 1px solid darkGray;
+  border-radius: 2px;
+}
+
+.bigbutton {
+  font-size: 38px;
+  text-align: center;
+  text-decoration: none;
+  /*display: inline-block;*/
+  margin: 3px 0 3px 0;
+}
+
+.mediumbutton {
+  font-size: 24px;
+  text-align: center;
+  text-decoration: none;
+  /*display: inline-block;*/
+  margin: 3px 0 3px 0;
+}
 
 .colorpicker {
     width: 100%;
@@ -139,8 +165,18 @@
   /*font-size:48px;*/
 }
 
-.eicontrol > eirange {
+/*.eicontrol > eirange {
   flex:1 1;
+}*/
+
+.eirange {
+  flex:1 1;
+  min-width: 10px;
+}
+
+[flex].eirange {
+  -webkit-flex-basis: 25px;
+  flex-basis: 25px;
 }
 
 
@@ -148,6 +184,7 @@
   flex:0;
   width:100%;
   display:flex;
+  flex-wrap: wrap;
   align-items:center;
   /*font-size:18px;*/
 }
@@ -179,14 +216,14 @@
   /*border: 3px solid blue;*/
 }
 
-.editbtn {
+.editbtn { /* TODO: maximum size with non cube dimensions */
   /*width: 100px;*/
   /*height: 100px;*/
-  flex-grow: 0;
-  box-sizing: border-box;
+  flex-grow: 1;
   border: 1px solid black;
   margin: 3px;
 }
+
 .modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
@@ -205,7 +242,14 @@
     position: relative;
     background-color: #fefefe;
     margin: auto;
-    padding: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+
+
+    padding: 10px;
     border: 1px solid #888;
     width: 80%;
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
@@ -213,9 +257,10 @@
     animation-duration: 0.4s
 }
 
+
 /* Add Animation */
 @-webkit-keyframes animatetop {
-    from {top: -300px; opacity: 0} 
+    from {top: -300px; opacity: 0}
     to {top: 0; opacity: 1}
 }
 

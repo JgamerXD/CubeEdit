@@ -1,6 +1,6 @@
 function createXYEditor(elem) {
   var t = $(elem)
-  console.log(t)
+  // console.log(t)
   t.empty()
   maxdim=Math.max(sizeX,sizeY,sizeZ);
   for (var y = sizeY-1; y >= 0; y--) { //Inverted because of top->bottom y-Axis
@@ -24,7 +24,7 @@ function createXYEditor(elem) {
 
 function createXZEditor(elem) {
   var t = $(elem)
-  console.log(t)
+  // console.log(t)
   t.empty()
   maxdim=Math.max(sizeX,sizeY,sizeZ);
   for (var z = 0; z < sizeZ; z++) {
@@ -48,7 +48,7 @@ function createXZEditor(elem) {
 
 function createYZEditor(elem) {
   var t = $(elem)
-  console.log(t)
+  // console.log(t)
   t.empty()
   maxdim=Math.max(sizeX,sizeY,sizeZ);
   for (var y = sizeY-1; y >= 0; y--) {

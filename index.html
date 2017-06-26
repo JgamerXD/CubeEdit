@@ -7,6 +7,10 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="manifest" href="manifest.json">
 
+	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+	<meta http-equiv="Pragma" content="no-cache" />
+	<meta http-equiv="Expires" content="0" />
+
 
 	<title>CubeEdit</title>
 	<link rel="icon" href="/favicon.png" type="image/png">
@@ -95,30 +99,33 @@
 
 			<div class="row ctext">Frame: <span id="currentFrame">0</span> / <span id="maxFrame">0</span></div>
 			<div class="eicontrol">
-				<button type="button" title="previous frame" onclick="{var r = $('#FIRange')[0]; r.stepDown(); r.onchange();}">
-					<i class="fa fa-arrow-left fa-3x" style="color:black;"></i>
+				<button type="button" class="bigbutton" title="previous frame" onclick="{var r = $('#FIRange')[0]; r.stepDown(); r.onchange();}">
+					<i class="fa fa-arrow-left" style="color:black;"></i>
 				</button>
 				<input type="range" id="FIRange" title="current frame" min=0 value="0" onchange="{lf(Number(this.value));}" style="flex:1 1;">
-				<button type="button" title="next frame" onclick="{var r = $('#FIRange')[0]; r.stepUp(); r.onchange();}">
-					<i class="fa fa-arrow-right fa-3x" style="color:black;"></i>
+				<button type="button" class="bigbutton" title="next frame" onclick="{var r = $('#FIRange')[0]; r.stepUp(); r.onchange();}">
+					<i class="fa fa-arrow-right" style="color:black;"></i>
 				</button>
 			</div>
 
 			<div class="control">
-				<button type="button" title="clear frame" onclick="clearFrame()">
-					<i class="fa fa-eraser fa-3x" style="color:maroon;"></i>
+				<button type="button" class="bigbutton" title="clear frame" onclick="clearFrame()">
+					<i class="fa fa-eraser" style="color:maroon;"></i>
 				</button>
-				<button type="button" title="remove frame" onclick="cutFrame()">
-					<i class="fa fa-scissors fa-3x" style="color:darkSlateGray;"></i>
+				<button type="button" class="bigbutton" title="remove frame" onclick="cutFrame()">
+					<i class="fa fa-scissors" style="color:darkSlateGray;"></i>
 				</button>
-				<button type="button" title="insert frame" onclick="insertFrame()">
-					<i class="fa fa-plus fa-3x" style="color:darkOliveGreen;"></i>
+				<button type="button" class="bigbutton" title="insert frame" onclick="insertFrame()">
+					<i class="fa fa-plus" style="color:darkOliveGreen;"></i>
 				</button>
-				<button type="button" title="duplicate frame" onclick="duplicateFrame()">
-					<i class="fa fa-copy fa-3x" style="color:black;"></i>
+				<button type="button" class="bigbutton" title="duplicate frame" onclick="duplicateFrame()">
+					<i class="fa fa-copy" style="color:black;"></i>
 				</button>
-				<button type="button" title="save" onclick="$('#savemodal').show()">
-					<i class="fa fa-save fa-3x" style="color:darkBlue;"></i>
+				<button type="button" class="bigbutton" title="save" onclick="$('#savemodal').show()">
+					<i class="fa fa-save" style="color:darkBlue;"></i>
+				</button>
+				<button type="button" class="bigbutton" title="load" onclick="$('#loadmodal').show()">
+					<i class="fa fa-file" style="color:darkGray;"></i>
 				</button>
 			</div>
 		</div>
@@ -127,32 +134,32 @@
 			<div class="row">
 				<div class="col-6">
 					<div class="eicontrol">
-						<button type="button" title="decrement X-index" onclick="{var r = $('#XEIRange')[0]; r.stepDown(); r.onchange();}">
-							<i class="fa fa-minus-circle fa-3x" style="color:red;"></i>
+						<button type="button"  class="bigbutton" title="decrement X-index" onclick="{var r = $('#XEIRange')[0]; r.stepDown(); r.onchange();}">
+							<i class="fa fa-minus-circle" style="color:red;"></i>
 						</button>
 						<input type="range" id="XEIRange" title="X-index" min=0 value="0" onchange="editIndexX=Number(this.value); notifyCubeDataChanged()"	style="flex:1 1;">
-						<button type="button" title="increment X-index" onclick="{var r = $('#XEIRange')[0]; r.stepUp(); r.onchange();}">
-							<i class="fa fa-plus-circle fa-3x" style="color:red"></i>
+						<button type="button" class="bigbutton" title="increment X-index" onclick="{var r = $('#XEIRange')[0]; r.stepUp(); r.onchange();}">
+							<i class="fa fa-plus-circle" style="color:red"></i>
 						</button>
 					</div>
 
 					<div class="eicontrol">
-						<button type="button" title="decrement Y-index" onclick="{var r = $('#YEIRange')[0]; r.stepDown(); r.onchange();}">
-							<i class="fa fa-minus-circle fa-3x" style="color:green;"></i>
+						<button type="button" class="bigbutton" title="decrement Y-index" onclick="{var r = $('#YEIRange')[0]; r.stepDown(); r.onchange();}">
+							<i class="fa fa-minus-circle" style="color:green;"></i>
 						</button>
 						<input type="range" id="YEIRange" title="Y-index" min=0 value="0" onchange="editIndexY=Number(this.value); notifyCubeDataChanged()" style="flex:1 1;">
-						<button type="button" title="inecrement Y-index" onclick="{var r = $('#YEIRange')[0]; r.stepUp(); r.onchange();}">
-							<i class="fa fa-plus-circle fa-3x"  style="color:green;"></i>
+						<button type="button" class="bigbutton" title="inecrement Y-index" onclick="{var r = $('#YEIRange')[0]; r.stepUp(); r.onchange();}">
+							<i class="fa fa-plus-circle"  style="color:green;"></i>
 						</button>
 					</div>
 
 					<div class="eicontrol">
-						<button type="button" title="decrement Z-index" onclick="{var r = $('#ZEIRange')[0]; r.stepDown(); r.onchange();}">
-							<i class="fa fa-minus-circle fa-3x" style="color:blue;"></i>
+						<button type="button" class="bigbutton" title="decrement Z-index" onclick="{var r = $('#ZEIRange')[0]; r.stepDown(); r.onchange();}">
+							<i class="fa fa-minus-circle" style="color:blue;"></i>
 						</button>
 						<input type="range" id="ZEIRange" title="Z-index" min=0 value="0" onchange="editIndexZ=Number(this.value); notifyCubeDataChanged()" style="flex:1 1;">
-						<button type="button" title="increment Z-index" onclick="{var r = $('#ZEIRange')[0]; r.stepUp(); r.onchange();}">
-							<i class="fa fa-plus-circle fa-3x" style="color:blue;"></i>
+						<button type="button" class="bigbutton" title="increment Z-index" onclick="{var r = $('#ZEIRange')[0]; r.stepUp(); r.onchange();}">
+							<i class="fa fa-plus-circle" style="color:blue;"></i>
 						</button>
 					</div>
 				</div>
@@ -181,21 +188,64 @@
 			<div id="palette" class="palette"></div>
 		</div>
 	</div>
+
+
 	<div id="savemodal" class="modal">
 		<div class="modalcontent">
-	<label>Filename:</label><input id="filename" type="text">
-	<button type="button" title="save" onclick='download(JSON.stringify({frames:frames,cmap:cubeColormap}),$("#filename").val(),"application/json"); $("#savemodal").hide()'>
-	<i class="fa fa-save fa-3x" style="color:darkBlue;"></i> Save
-	</button>
-	<button type="button" title="cancel" onclick='$("#savemodal").hide()'>
-	<i class="fa fa-close fa-3x" style="color:red;"></i> Cancel
-	</button>
+			<div style="width:100%">
+				<label>Filename:	</label><input id="filename" type="text">
+			</div>
+			<fieldset>
+				<legend>File format</legend>
+				<table>
+					<tr>
+						<td><input id="ffjson" type="radio" name="fileformat" value="json"></td>
+						<td><label for="ffjson">.json</label></td>
+						<td><label for="ffjson">JSON</label></td>
+					</tr>
+					<tr>
+						<td><input id="ffcua" type="radio" name="fileformat" value="cua"></td>
+						<td><label for="ffcua">.cua</label></td>
+						<td><label for="ffcua">Binary file</label></td>
+					</tr>
+				</table>
+			</fieldset>
+			<div class="row">
+				<div class="col-6"><button type="button" class="mediumbutton" style="width:100%" title="save" onclick='exportfile()'>
+					<i class="fa fa-save" style="color:darkBlue;"></i> Save
+				</button></div>
+				<div class="col-6"><button type="button" class="mediumbutton" style="width:100%" title="cancel" onclick='$("#savemodal").hide()'>
+					<i class="fa fa-close" style="color:red;"></i> Cancel
+				</button></div>
+			</div>
+		</div>
 	</div>
-	
+
+	<div id="loadmodal" class="modal">
+		<div class="modalcontent">
+			<label for="loadfile"> File: </label><input type="file" id="loadfile">
+				<div class="row">
+				<div class="col-6"><button type="button" class="mediumbutton" style="width:100%" title="save" onclick='importfile()'>
+					<i class="fa fa-file" style="color:darkGray;"></i> Load
+				</button></div>
+				<div class="col-6"><button type="button" class="mediumbutton" style="width:100%" title="cancel" onclick='$("#loadmodal").hide()'>
+					<i class="fa fa-close" style="color:red;"></i> Cancel
+				</button></div>
+			</div>
+		</div>
+	</div>
+
+	<div id="utilmodal" class="modal">
+		<div class="modalcontent">
+			<div id="utildiv" style="width:100%; border: 2px inset darkGray; overflow-wrap: break-word; padding:10px;"></div>
+			<button type="button" class="mediumbutton" style="width:100%" title="cancel" onclick='$("#utilmodal").hide()'>
+				<i class="fa fa-close" style="color:red;"></i> Close
+			</button>
+		</div>
+	</div>
 
 
-	
-	
+
 
 	<script src="js/3rdparty/gl-matrix-min.js"></script>
 	<script src="js/3rdparty/webgl-debug.js"></script>
@@ -204,7 +254,7 @@
 	<script src="js/3dview.js"></script>
 	<script src="js/palette.js"></script>
 	<script src="js/editor.js"></script>
-	<script src="js/export.js"></script>	
+	<script src="js/importexport.js"></script>
 
 	<script src="js/main.js"></script>
 </body>

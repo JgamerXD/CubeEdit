@@ -2,12 +2,13 @@
 $(document).ready(function() {
 
   cubeInitCallbacks.push(setupEditRanges);
+  cubeInitCallbacks.push(() => {createXYEditor("#editXY");});
+  cubeInitCallbacks.push(() => {createXZEditor("#editXZ");});
+  cubeInitCallbacks.push(() => {createYZEditor("#editYZ");});
 
   initCube(4,4,4);
   createTable(16,"#palette",4);
-  createXYEditor("#editXY");
-  createXZEditor("#editXZ");
-  createYZEditor("#editYZ");
+
   dataChangedCallbacks.push(updateEditbuttonColors);
   editIndexChangedCallbacks.push(updateEditbuttonColors);
 	startGL();
@@ -34,14 +35,3 @@ function setupEditRanges() {
 
 
 // DEBUG
-
-function lf(i) {
-  if(i<0 || i>=frames.length) {
-    console.log("invalid index");
-    return;
-  }
-
-  currentIndex = i;
-  currentFrame = frames[i];
-  notifyCubeDataChanged();
-}
