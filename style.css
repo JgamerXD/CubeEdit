@@ -8,8 +8,6 @@ body {
 
 .row {
   width:100%;
-  display: flex;
-  align-items: stretch;
 }
 
 .row::after {
@@ -19,7 +17,6 @@ body {
 }
 
 [class*="col-"] {
-  align-items: stretch;
   float: left;
   padding: 5px;
   position: relative;
