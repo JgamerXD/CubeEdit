@@ -1,11 +1,11 @@
 var elements;
 
-function createTable(numColors, table, colorsPerRow = 3) {
+function createTable(table, colorsPerRow = 3) {
   var t = $(table)
   console.log(t)
   t.empty()
   // currentEditColorPrim = 0
-  for (var i = 0; i < numColors; i++) {
+  for (var i = 0; i < cmapsize; i++) {
     var d = $("<div>");
     ddom = d[0];
     ddom.className = "pickcolor";
@@ -28,14 +28,20 @@ function createTable(numColors, table, colorsPerRow = 3) {
 function changeColor() {
   var cString = $("#currentColor").val();
   // console.log(parseInt(cString.substring(1,7),16))
-  cubeColormap[currentEditColorPrim] = parseInt(cString.substring(1,7),16);
-  updateCmapButtonColors();
+  currentColormap[currentEditColorPrim] = parseInt(cString.substring(1,7),16);
   notifyCubeDataChanged();
 }
 
 function setColor(e) {
-  var col = "#" + ((0x1000000+cubeColormap[e.colorPaletteIndex]).toString(16)).slice(1,7);
+  var col = "#" + ((0x1000000+currentColormap[e.colorPaletteIndex]).toString(16)).slice(1,7);
   e.style.backgroundColor = col;
+}
+
+function setPickerColor() {
+  var col = "#" + ((0x1000000+currentColormap[currentEditColorPrim]).toString(16)).slice(1,7);
+  cp = $("#currentColor")[0]
+  // if (cp.value != col)
+    cp.value = col;
 }
 
 function updateCmapButtonColors() {
@@ -43,11 +49,11 @@ function updateCmapButtonColors() {
   for (var i = 0; i < buttons.length; i++) {
     setColor(buttons[i]);
   }
+  setPickerColor();
 }
 
 
 function chooseColor(e) {
   currentEditColorPrim = e.colorPaletteIndex;
-  var col = "#" + ((0x1000000+cubeColormap[currentEditColorPrim]).toString(16)).slice(1,7);
-  $("#currentColor")[0].value = col;
+  setPickerColor();
 }

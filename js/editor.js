@@ -73,7 +73,7 @@ function createYZEditor(elem) {
 
 function setEditColor(e) {
   // console.log(getIndex.apply(this,e.cubePos()));
-  var col = ((0x1000000+cubeColormap[currentFrame[getIndex.apply(this,e.cubePos())]]).toString(16) + " ").slice(1,-1);
+  var col = ((0x1000000+currentColormap[currentFrame[getIndex.apply(this,e.cubePos())]]).toString(16) + " ").slice(1,-1);
   e.style.backgroundColor = '#'+col;
 }
 

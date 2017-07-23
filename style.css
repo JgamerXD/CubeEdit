@@ -3,12 +3,13 @@
 }
 
 body {
-  background-color: linen;
+  /*background-color: linen;*/
 }
 
 .row {
   width:100%;
-  /*display: flex;*/
+  display: flex;
+  align-items: stretch;
 }
 
 .row::after {
@@ -18,8 +19,10 @@ body {
 }
 
 [class*="col-"] {
+  align-items: stretch;
   float: left;
   padding: 5px;
+  position: relative;
 
 
   /*border: 1px solid red;*/
@@ -117,6 +120,7 @@ button {
   flex-wrap: wrap;
   justify-content: flex-start;
   align-content: center;
+  overflow-y: scroll;
 }
 
 
@@ -236,6 +240,15 @@ button {
     overflow: auto; /* Enable scroll if needed */
     background-color: rgb(0,0,0); /* Fallback color */
     background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+
+}
+
+@supports(backdrop-filter:none) or (-webkit-backdrop-filter:none) {
+  .modal {
+    background-color: #00000000;
+    -webkit-backdrop-filter: saturate(40%) blur(10px) brightness(50%);
+    backdrop-filter: saturate(40%) blur(10px) brightness(50%);
+  }
 }
 /* Modal Content */
 .modalcontent {
@@ -252,7 +265,7 @@ button {
     padding: 10px;
     border: 1px solid #888;
     width: 80%;
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    /*box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);*/
     animation-name: animatetop;
     animation-duration: 0.4s
 }

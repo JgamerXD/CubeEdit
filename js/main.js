@@ -5,10 +5,11 @@ $(document).ready(function() {
   cubeInitCallbacks.push(() => {createXYEditor("#editXY");});
   cubeInitCallbacks.push(() => {createXZEditor("#editXZ");});
   cubeInitCallbacks.push(() => {createYZEditor("#editYZ");});
+  cubeInitCallbacks.push(() => {createTable("#palette",4);});
 
-  initCube(4,4,4);
-  createTable(16,"#palette",4);
+  initCube(4,4,4,16);
 
+  dataChangedCallbacks.push(updateCmapButtonColors);
   dataChangedCallbacks.push(updateEditbuttonColors);
   editIndexChangedCallbacks.push(updateEditbuttonColors);
 	startGL();

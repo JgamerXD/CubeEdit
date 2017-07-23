@@ -1,4 +1,5 @@
 function imported(data) {
+  console.log(data);
   if(data.size) {
     if(data.size[0] != sizeX || data.size[1] != sizeY || data.size[2] != sizeZ)
       initCube.apply(this,data.size)
@@ -6,14 +7,17 @@ function imported(data) {
 
   if(data.frames) {
     frames = data.frames;
-    lf(0);
+    currentFrame = frames[0];
   }
 
-  if(data.cmap) {
-    console.log(cubeColormap);
-    cubeColormap = data.cmap;
-    createTable(data.cmap.length,"#palette",4);
-    console.log(cubeColormap);
+  if(data.colormaps) {
+    console.log(colormaps);
+    colormaps = data.colormaps.maps;
+    cmapsize = data.colormaps.size;
+    currentCmapIndex = 0;
+    currentColormap = colormaps[currentCmapIndex];
+    createTable("#palette",4);
+    console.log(colormaps);
   }
 
   notifyCubeDataChanged();
@@ -74,7 +78,7 @@ function importJSON(file, onLoaded) {
 function exportJSON() {
   var result = {};
   result.data = JSON.stringify({size:[sizeX,sizeY,sizeZ],
-    frames:Array.from(frames),cmap:cubeColormap});
+    frames:Array.from(frames),colormaps:{size:cmapsize,maps:colormaps}});
   result.extension = ".json";
   result.type = "application/json";
   return result;
@@ -87,14 +91,24 @@ function exportCUA() {
   data.push(sizeX,sizeY,sizeZ);
   data.push(5); //update rate TODO: input field
 
-  var cmapsize = 4;
-  data.push(cmapsize); //colormap size in bits (1|2|4|8)
-  data.push(1); //number of colormaps TODO: implement multiple colormaps
+  cmapbitsize = Math.ceil(Math.log2(cmapsize))
+  console.log(cmapbitsize);
+  if(cmapbitsize <=0 || cmapbitsize > 8) {
+    throw "Error while creating .cua export: \nInvalid colormap size: has to be between 2 and 256"
+  }
 
-  var cmapmask = 0xff >> cmapsize;
+  data.push(cmapbitsize); //colormap size in bits (1..8)
+  data.push(colormaps.length); //number of colormaps
 
-  for (var i = 0; i < cubeColormap.length; i++) {
-    data.push((cubeColormap[i]&0xff0000)>>16,(cubeColormap[i]&0x00ff00)>>8,cubeColormap[i]&0x0000ff);
+  var cmapmask = 0xff >> cmapbitsize;
+  for (var i = 0; i < colormaps.length; i++) {
+    for (var j = 0; j < 2**cmapbitsize; j++) {
+      if (j < colormaps[i].length) {
+        data.push((colormaps[i][j]&0xff0000)>>16,(colormaps[i][j]&0x00ff00)>>8,colormaps[i][j]&0x0000ff);
+      } else {
+        data.push(0,0,0); //fill unused colors
+      }
+    }
   }
 
   data.push((frames.length & 0xff00)>>8, frames.length & 0x00ff) //number of frames
@@ -105,10 +119,10 @@ function exportCUA() {
   console.log(frames);
   for (var i = 0; i < frames.length; i++) {
     for (var j = 0; j < frames[i].length; j++) {
-      currentbyte = currentbyte | (frames[i][j] & cmapmask)<<8-currentbit-cmapsize;
-      currentbit = currentbit + cmapsize;
+      currentbyte = currentbyte | (frames[i][j] & cmapmask)<<8-currentbit-cmapbitsize;
+      currentbit = currentbit + cmapbitsize;
       if (currentbit >= 8) { //Byte full
-        console.log("byte");
+        // console.log("byte");
         data.push(currentbyte);
         currentbyte = 0;
         currentbit = 0;

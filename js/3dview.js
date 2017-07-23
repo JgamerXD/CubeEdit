@@ -102,7 +102,7 @@ function render() {
 
 
 				gl.uniformMatrix4fv(basicShader.mvMatrixUniform, false, mvMatrix);
-				gl.uniform4fv(basicShader.meshColorUniform, colorToRgba(cubeColormap[currentFrame[getIndex(i,j,k)]]));
+				gl.uniform4fv(basicShader.meshColorUniform, colorToRgba(currentColormap[currentFrame[getIndex(i,j,k)]]));
 
 
 				// setMatrixUniforms(basicShaderProgram);
