@@ -1,0 +1,14 @@
+draft of possible program state
+{
+  cube:{
+    size:[x,y,z],
+    frames:[f1,f2,...,fn],
+    colormaps:{size,maps:[m12,m2,...,mn]}
+  }
+  editor:{
+    editIndex:{x,y,z},
+    currentFrame:{frame},
+    currentCmap:{cmap}
+  }
+  view
+}
