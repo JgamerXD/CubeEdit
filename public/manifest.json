@@ -1,11 +1,42 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "name": "LED-Cube Editor",
+  "short_name":"CubeEdit",
   "icons": [
     {
-      "src": "favicon.ico",
-      "sizes": "192x192",
-      "type": "image/png"
+      "src": "web_images/icon16x16.png",
+      "sizes": "16x16",
+      "type": "image/png",
+      "density": 0.75
+    },
+    {
+      "src": "web_images/icon32x32.png",
+      "sizes": "32x32",
+      "type": "image/png",
+      "density": 1.0
+    },
+    {
+      "src": "icon48x48.png",
+      "sizes": "48x48",
+      "type": "image/png",
+      "density": 1.5
+    },
+    {
+      "src": "icon60x60.png",
+      "sizes": "60x60",
+      "type": "image/png",
+      "density": 2.0
+    },
+    {
+      "src": "icon128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "density": 3.0
+    },
+    {
+      "src": "icon720x720.png",
+      "sizes": "720x720",
+      "type": "image/png",
+      "density": 4.0
     }
   ],
   "start_url": "./index.html",
