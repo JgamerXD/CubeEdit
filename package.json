@@ -1,7 +1,8 @@
 {
-  "name": "jgamerxd.github.io",
+  "name": "CubeEdit",
   "version": "0.1.0",
   "private": true,
+  "homepage":"jgamerxd.github.io/CubeEdit",
   "dependencies": {
     "font-awesome": "^4.7.0",
     "gl-matrix": "^2.4.0",
@@ -12,6 +13,8 @@
     "redux": "^3.7.2"
   },
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
