@@ -1,0 +1,37 @@
+.buttonrange {
+  border: 1px solid darkGrey;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-rows: 1em 2em;
+  grid-template-columns: 3em 1fr 3em;
+  grid-column-gap: 5px;
+  grid-template-areas:
+    "bl lbl bm"
+    "bl sli bm";
+  align-items: stretch;
+  justify-items: stretch;
+}
+
+.buttonrange-less {
+  grid-area:bl;
+}
+.buttonrange-more {
+  grid-area:bm;
+}
+.buttonrange-label {
+  grid-area:lbl;
+}
+.buttonrange-slider {
+  grid-area:sli;
+  margin: 0 20px 0 20px;
+  width: 100%;
+  justify-self: center;
+  align-self: center;
+}
+
+.bigbutton {
+  height: 100%;
+  /*width: 100%;*/
+  font-size: 2em;
+}
