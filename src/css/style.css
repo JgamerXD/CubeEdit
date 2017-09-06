@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 .buttonrange {
   border: 1px solid darkGrey;
   padding: 0;
@@ -34,4 +35,32 @@
   height: 100%;
   /*width: 100%;*/
   font-size: 2em;
+=======
+
+.square {
+  position: relative;
+}
+
+.square:before {
+  content: "";
+  float: left;
+
+  /* essentially the aspect ratio. 100% means the
+  div will remain 100% as tall as it is wide, or
+  square in other words.  */
+  padding-bottom: 100%;
+}
+
+.square:after {
+  content: "";
+  display: block;
+  clear: both;
+}
+
+.content {
+  position: absolute;
+  box-sizing: content-box;
+  width: 100%;
+  height:100%;
+>>>>>>> 346e3b3f1c198fac60d09817aa5ec04a2a139f44
 }
