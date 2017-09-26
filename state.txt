@@ -1,0 +1,26 @@
+//Markup of app state
+const state = {
+  editcube:{
+    initialized:false,
+    size:{x,y,z},
+    cmapsize,
+    frames:{
+      byId:{id:frame},
+      all:[id1,id2,...,idn]
+    },
+    colormaps:{
+      byId:{id:frame},
+      all:[id1,id2,...,idn]
+    }
+    edit:{
+      x,y,z,
+      primaryColor:1,
+      secondaryColor:0,
+      currentFrame:i_frame,
+      currentCmap:i_cmap
+    },
+  },
+  ui: {
+    backgroundCubemap:{left,right,bottom,top,front,back}
+  }// ???
+}

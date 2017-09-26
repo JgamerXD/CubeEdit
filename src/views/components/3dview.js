@@ -1,21 +1,48 @@
-import React, { Component } from 'react';
-import {get} from './getfile';
+import React from 'react';
+import * as glm from 'gl-matrix'
 
-import basic_fs 	from './glsl/basic.fs'
-import basic_vs 	from './glsl/basic.vs'
-import cubemap_vs from './glsl/cubemap.vs'
-import cubemap_fs from './glsl/cubemap.fs'
+import basic_fs 	from 'glsl/basic.fs'
+import basic_vs 	from 'glsl/basic.vs'
+import cubemap_vs from 'glsl/cubemap.vs'
+import cubemap_fs from 'glsl/cubemap.fs'
 
-const glm = require("gl-matrix");
+import * as Cube from 'state/ducks/editcube/cube'
+
+import cmfront from 'img/cubemaps/small/front.jpg'
+import cmback from 'img/cubemaps/small/back.jpg'
+import cmright from 'img/cubemaps/small/right.jpg'
+import cmleft from 'img/cubemaps/small/left.jpg'
+import cmtop from 'img/cubemaps/small/top.jpg'
+import cmbottom from 'img/cubemaps/small/bottom.jpg'
+
+// const vup = glm.vec3.fromValues(0.0,1.0,0.1);
 
 
-class GL3DView extends React.Component {
+
+export default class GL3DView extends React.Component {
 	constructor(props) {
 		super(props);
 
 
+		this.basicShaderReady = false;
+		this.skyboxReady = false;
+
+		this.cubeDist = 5.0
+
+		this.camera = {pos:glm.vec3.fromValues(0,0,0), dist:40, pitch:Math.PI/8, yaw:Math.PI*1/8};
+		this.mvmStack = [];
+
+		this.render = this.render.bind(this);
+		this.startGL = this.startGL.bind(this);
+		this.renderGL = this.renderGL.bind(this);
+		this.setMatrixUniforms = this.setMatrixUniforms.bind(this);
+		this.requestAnimation = function() {
+			window.requestAnimationFrame(this.renderGL);
+		}.bind(this)
+
 
 		this.mouseDown = false;
+		// this.translate = false;
 		this.changeViewTouch = -1;
 
 		this.handleMouseDown = this.handleMouseDown.bind(this);
@@ -25,34 +52,57 @@ class GL3DView extends React.Component {
 		this.handleMouseWheel = this.handleMouseWheel.bind(this);
 
 		this.handleTouchStart = this.handleTouchStart.bind(this);
-		this.handleMouseMove = this.handleMouseMove.bind(this);
+		this.handleTouchMove = this.handleTouchMove.bind(this);
 		this.handleTouchEnd = this.handleTouchEnd.bind(this);
+
+
 
 	}
 
 	render() {
-		return <canvas ref="canvas"></canvas>
+
+		this.requestAnimation();
+		return <canvas ref="canvas" className="glCanvas fill"></canvas>;
 	}
 
 	componentDidMount() {
-		this.startGL(this.refs.canvas);
+		this.gl = this.startGL(this.refs.canvas);
+		this.resize(this.refs.canvas);
+		this.renderGL();
 	}
 
 
 	startGL(canvas) {
 		//console.log($("#basic-fs")[0].type);
 
-		this.calcInitialCameraPos(camera);
+		this.calcInitialCameraPos(this.camera,this.props.size,this.cubeDist);
 
-		gl = initWebGL(canvas);
-		initViewport(gl,canvas);
-		initMatrices(canvas);
+		var gl = initWebGL(canvas);
+
+		this.initViewport(gl,canvas);
+		this.initMatrices(canvas);
 		// console.log(mvMatrix)
 		//mat4.translate(mvMatrix,mvMatrix,[-1.0,1.0,-7.0]);
-		initShaders(gl);
-		cubeModel = createCube(gl);
-		skyboxCube = createSkybox(gl);
-		skyboxTexture = loadCubeMap("cubemaps/small");
+		this.cubeModel = createCube(gl);
+		this.initBasicShader(gl).then(shader => {
+			this.basicShader = shader;
+			this.basicShaderReady = true;
+			console.log("basic shader ready");
+			window.requestAnimationFrame(this.renderGL);
+		});
+
+
+		this.skyboxCube = createSkybox(gl);
+		// console.log("Cubemap" ,this.props.cubemap);
+		Promise.all([loadCubeMap(this.props.cubemap,gl),this.initCubemapShader(gl)])
+		.then(([cubemap,shader]) => {
+			this.skyboxTexture = cubemap;
+			this.cubemapShader = shader;
+			this.skyboxReady = true;
+			console.log("cubemap + shader ready");
+			window.requestAnimationFrame(this.renderGL);
+		})
+
 
 		gl.clearColor(0.8,0.8,1.0,1.0);
 		gl.enable(gl.DEPTH_TEST);
@@ -63,21 +113,21 @@ class GL3DView extends React.Component {
 
 
 
-		canvas.onwheel = handleMouseWheel;
-		canvas.onmousedown = handleMouseDown;
-		document.onmouseup = handleMouseUp;
-		document.onmousemove = handleMouseMove;
+		canvas.addEventListener("wheel", this.handleMouseWheel);
+		canvas.addEventListener("mousedown", this.handleMouseDown);
+		document.addEventListener("mousemove", this.handleMouseMove);
+		document.addEventListener("mouseup", this.handleMouseUp);
 
-		canvas.ontouchstart = handleTouchStart;
-		document.ontouchmove = handleTouchMove;
-		document.ontouchend = handleTouchEnd;
+		canvas.addEventListener("touchstart", this.handleTouchStart);
+		document.addEventListener("touchmove", this.handleTouchMove);
+		document.addEventListener("touchend", this.handleTouchEnd);
 
 
 		// canvas.onresize = function() {resize(gl.canvas)};
-		window.onresize = render;
+		window.addEventListener("resize", ()=>this.resize(this.gl.canvas));
 
 		// console.log(canvas)
-		renderGL();
+		return gl;
 		//window.requestAnimationFrame(render, canvas);
 
 		// $.ajaxSetup({
@@ -89,61 +139,70 @@ class GL3DView extends React.Component {
 	}
 
 
-
 	renderGL() {
-		//console.log(gl.canvas);
-		resize(gl.canvas)
+		console.log("render");
+		let gl = this.gl;
+		// const axes = this.props.axes;
+		const size = this.props.size;
+		const frame = this.props.frame;
+		const colormap = this.props.colormap;
+
+		// this.resize(gl.canvas)
 		gl.viewport(0,0,gl.canvas.width,gl.canvas.height);
 
-		calcMVM(mvMatrix,camera);
+		calcMVM(this.mvMatrix,this.camera);
 
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-		gl.useProgram(basicShader);
+		if(this.basicShaderReady) {
 
-		gl.bindBuffer(gl.ARRAY_BUFFER,cubeModel.buffer);
-		gl.vertexAttribPointer(basicShader.vertexPositionAttribute,cubeModel.vertSize,gl.FLOAT,false,0,0);
+			gl.useProgram(this.basicShader);
 
-		setMatrixUniforms(basicShader);
+			gl.bindBuffer(gl.ARRAY_BUFFER,this.cubeModel.buffer);
+			gl.vertexAttribPointer(this.basicShader.vertexPositionAttribute,this.cubeModel.vertSize,gl.FLOAT,false,0,0);
 
-		gl.bindBuffer(gl.ARRAY_BUFFER,cubeModel.normals);
-		gl.vertexAttribPointer(basicShader.vertexNormalAttribute,cubeModel.normSize,gl.FLOAT,false,0,0);
+			this.setMatrixUniforms(this.basicShader);
 
-		//gl.drawArrays(gl.TRIANGLES, 0, 24);
-		for(i=0;i<sizeX;i++)
-			for(j=0;j<sizeY;j++)
-				for(k=0;k<sizeZ;k++) {
+			gl.bindBuffer(gl.ARRAY_BUFFER,this.cubeModel.normals);
+			gl.vertexAttribPointer(this.basicShader.vertexNormalAttribute,this.cubeModel.normSize,gl.FLOAT,false,0,0);
 
-					mvmStack.push(mat4.clone(mvMatrix));
-					mat4.translate(mvMatrix,mvMatrix,[cubeDist*i,cubeDist*j,cubeDist*k]);
+			//gl.drawArrays(gl.TRIANGLES, 0, 24);
+			// console.log(size,frame,colormap);
+			// TODO: Add support for other layouts
+			for(let i=0;i<size.x;i++)
+				for(let j=0;j<size.y;j++)
+					for(let k=0;k<size.z;k++) {
+
+						this.mvmStack.push(glm.mat4.clone(this.mvMatrix));
+						glm.mat4.translate(this.mvMatrix,this.mvMatrix,[this.cubeDist*i,this.cubeDist*j,this.cubeDist*k]);
+
+						// console.log(Cube.getIndex(size,i,j,k),frame[Cube.getIndex(size,i,j,k)],colorToRgba(colormap[frame[Cube.getIndex(size,i,j,k)]]));
 
 
+						gl.uniformMatrix4fv(this.basicShader.mvMatrixUniform, false, this.mvMatrix);
+						gl.uniform4fv(this.basicShader.meshColorUniform, colorToRgba(colormap[frame[Cube.getIndex(size,i,j,k)]]));
 
 
-					gl.uniformMatrix4fv(basicShader.mvMatrixUniform, false, mvMatrix);
-					gl.uniform4fv(basicShader.meshColorUniform, colorToRgba(currentColormap[currentFrame[getIndex(i,j,k)]]));
+						// setMatrixUniforms(basicShaderProgram);
 
+						gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,this.cubeModel.indices);
+						gl.drawElements(this.cubeModel.primtype,this.cubeModel.nIndices,gl.UNSIGNED_SHORT,0);
 
-					// setMatrixUniforms(basicShaderProgram);
+						this.mvMatrix = this.mvmStack.pop();
+					}
+		}
+		if(this.skyboxReady) {
+			gl.useProgram(this.cubemapShader);
 
-					gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,cubeModel.indices);
-					gl.drawElements(cubeModel.primtype,cubeModel.nIndices,gl.UNSIGNED_SHORT,0);
+			this.setMatrixUniforms(this.cubemapShader);
 
-					mvMatrix = mvmStack.pop();
-				}
+			gl.bindBuffer(gl.ARRAY_BUFFER,this.skyboxCube.buffer);
+			gl.vertexAttribPointer(this.cubemapShader.vertexPositionAttribute,this.skyboxCube.vertSize,gl.FLOAT,false,0,0);
 
-		if(skyboxTexture) {
-			gl.useProgram(cubemapShader);
+			gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.skyboxTexture);
 
-			setMatrixUniforms(cubemapShader);
-
-			gl.bindBuffer(gl.ARRAY_BUFFER,skyboxCube.buffer);
-			gl.vertexAttribPointer(cubemapShader.vertexPositionAttribute,skyboxCube.vertSize,gl.FLOAT,false,0,0);
-
-			gl.bindTexture(gl.TEXTURE_CUBE_MAP, skyboxTexture);
-
-			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,skyboxCube.indices);
-			gl.drawElements(skyboxCube.primtype,skyboxCube.nIndices,gl.UNSIGNED_SHORT,0);
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,this.skyboxCube.indices);
+			gl.drawElements(this.skyboxCube.primtype,this.skyboxCube.nIndices,gl.UNSIGNED_SHORT,0);
 		}
 		// console.log("draw");
 		//mat4.rotate(mvMatrix,mvMatrix,Math.PI/400,vup);
@@ -154,33 +213,36 @@ class GL3DView extends React.Component {
 
 	initBasicShader(gl) {
 		// console.log("shaders")
-		Promise.all([getShader(gl, basic_vs,gl.VERTEX_SHADER),getShader(gl, basic_fs,gl.FRAGMENT_SHADER)])
+		return Promise.all([getShader(gl, basic_vs, gl.VERTEX_SHADER),getShader(gl, basic_fs,gl.FRAGMENT_SHADER)])
 		.then(([basicvs,basicfs]) => {
-			var bsp = gl.createProgram();
-			gl.attachShader(bsp, basicvs);
-			gl.attachShader(bsp, basicfs);
-			gl.linkProgram(bsp);
+			return new Promise((resolve,reject) => {
+				var bsp = gl.createProgram();
+				gl.attachShader(bsp, basicvs);
+				gl.attachShader(bsp, basicfs);
+				gl.linkProgram(bsp);
 
-			if (!gl.getProgramParameter(bsp, gl.LINK_STATUS)) {
-				throw new Error("Could not initialise baic shaders");
-			}
+				if (!gl.getProgramParameter(bsp, gl.LINK_STATUS)) {
+					throw new Error("Could not initialise baic shaders");
+				}
 
-			//gl.useProgram(bsp);
+				//gl.useProgram(bsp);
 
 
 
-			bsp.vertexPositionAttribute = gl.getAttribLocation(bsp,"aVertexPos");
-			gl.enableVertexAttribArray(bsp.vertexPositionAttribute);
+				bsp.vertexPositionAttribute = gl.getAttribLocation(bsp,"aVertexPos");
+				gl.enableVertexAttribArray(bsp.vertexPositionAttribute);
 
-			bsp.vertexNormalAttribute = gl.getAttribLocation(bsp,"aVertexNormal");
-			gl.enableVertexAttribArray(bsp.vertexNormalAttribute)
+				bsp.vertexNormalAttribute = gl.getAttribLocation(bsp,"aVertexNormal");
+				gl.enableVertexAttribArray(bsp.vertexNormalAttribute)
 
-			bsp.meshColorUniform = gl.getUniformLocation(bsp,"uColor");
+				bsp.meshColorUniform = gl.getUniformLocation(bsp,"uColor");
 
-			bsp.pMatrixUniform = gl.getUniformLocation(bsp,"uProjectionMatrix");
-			bsp.mvMatrixUniform = gl.getUniformLocation(bsp,"uModelViewMatrix");
+				bsp.pMatrixUniform = gl.getUniformLocation(bsp,"uProjectionMatrix");
+				bsp.mvMatrixUniform = gl.getUniformLocation(bsp,"uModelViewMatrix");
 
-			this.basicShader = bsp;
+				// this.basicShader = bsp;
+				resolve(bsp);
+			})
 
 		}).catch(e => {
 			alert(e);
@@ -188,29 +250,32 @@ class GL3DView extends React.Component {
 	}
 
 	initCubemapShader(gl) {
-		Promise.all([getShader(gl, cubemap_vs,gl.GL_VERTEX_SHADER),getShader(gl, cubemap_fs,gl.GL_FRAGMENT_SHADER)])
+		return Promise.all([getShader(gl, cubemap_vs, gl.VERTEX_SHADER),getShader(gl, cubemap_fs,gl.FRAGMENT_SHADER)])
 		.then(([cubevs,cubefs]) => {
-	// gl.useProgram(basicShaderProgram);
+			return new Promise((resolve,reject) => {
+				// gl.useProgram(basicShaderProgram);
 
-			let csp = gl.createProgram();
-			gl.attachShader(csp, cubevs);
-			gl.attachShader(csp, cubefs);
-			gl.linkProgram(csp);
+				let csp = gl.createProgram();
+				gl.attachShader(csp, cubevs);
+				gl.attachShader(csp, cubefs);
+				gl.linkProgram(csp);
 
-			if (!gl.getProgramParameter(csp, gl.LINK_STATUS)) {
-				throw new Error("Could not initialise cubemap shaders");
-			}
+				if (!gl.getProgramParameter(csp, gl.LINK_STATUS)) {
+					throw new Error("Could not initialise cubemap shaders");
+				}
 
-			//gl.useProgram(csp);
+				//gl.useProgram(csp);
 
-			csp.vertexPositionAttribute = gl.getAttribLocation(csp,"aVertexPos");
-			gl.enableVertexAttribArray(csp.vertexPositionAttribute);
+				csp.vertexPositionAttribute = gl.getAttribLocation(csp,"aVertexPos");
+				gl.enableVertexAttribArray(csp.vertexPositionAttribute);
 
-			csp.skyboxTexUniform = gl.getUniformLocation(csp,"uSkybox");
-			csp.pMatrixUniform = gl.getUniformLocation(csp,"uProjectionMatrix");
-			csp.mvMatrixUniform = gl.getUniformLocation(csp,"uModelViewMatrix");
+				csp.skyboxTexUniform = gl.getUniformLocation(csp,"uSkybox");
+				csp.pMatrixUniform = gl.getUniformLocation(csp,"uProjectionMatrix");
+				csp.mvMatrixUniform = gl.getUniformLocation(csp,"uModelViewMatrix");
 
-			this.cubemapShader = csp;
+				// this.cubemapShader = csp;
+				resolve(csp);
+			})
 		}).catch(e => {
 			alert(e);
 		})
@@ -236,8 +301,8 @@ class GL3DView extends React.Component {
 
 
 	setMatrixUniforms(shaderProgram) {
-		this.gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
-		this.gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
+		this.gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, this.mvMatrix);
+		this.gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, this.pMatrix);
 	}
 
 	resize(canvas) {
@@ -251,26 +316,28 @@ class GL3DView extends React.Component {
 	  var displayHeight = Math.floor(canvas.clientHeight * realToCSSPixels);
 
 		// Check if the canvas is not the same size.
-		if (canvas.width  != displayWidth ||
-				canvas.height != displayHeight) {
+		if (canvas.width  !== displayWidth ||
+				canvas.height !== displayHeight) {
 
 			// Make the canvas the same size
 			canvas.width  = displayWidth;
 			canvas.height = displayHeight;
 		}
 
-		glm.mat4.perspective(pMatrix, Math.PI / 4,
+		glm.mat4.perspective(this.pMatrix, Math.PI / 4,
 			canvas.width / canvas.height, 0.001, 1000); //gl. ?
 
 
 		// window.requestAnimationFrame(render, canvas);
+		this.requestAnimation();
 	}
 
-	calcInitialCameraPos(camera,cube,dist)
-	{
-		camera.pos = glm.vec3.fromValues((dist*cube.size[0]-dist)/2.0,
-																		 (dist*cube.size[1]-dist)/2.0,
-																		 (dist*cube.size[2]-dist)/2.0)
+	calcInitialCameraPos(camera,size,dist) {
+		// const axes = this.props.axes;
+		// const size = this.props.size;
+		camera.pos = glm.vec3.fromValues((dist*size.x-dist)/2.0,
+																		 (dist*size.y-dist)/2.0,
+																		 (dist*size.z-dist)/2.0)
 	}
 
 	/*------------------------------------------------------------------------------
@@ -279,86 +346,81 @@ class GL3DView extends React.Component {
 
 	handleMouseDown(event) {
 	  this.mouseDown = true;
+		// if (event.shiftKey)
+		// 	this.translate = true;
 	  this.lastMouseX = event.clientX;
 	  this.lastMouseY = event.clientY;
 	}
 
 	handleMouseUp(event) {
 	  this.mouseDown = false;
+		this.translate = false;
 	}
 
-
-
-
 	handleMouseMove(event) {
-	  if (!mouseDown) {
+	  if (!this.mouseDown) {
 	    return;
 	  }
 	  var newX = event.clientX;
 	  var newY = event.clientY;
 
-	  var deltaX = newX - lastMouseX;
+	  var deltaX = newX - this.lastMouseX;
+		var deltaY = newY - this.lastMouseY;
 
-	  this.camera.pitch = modf(camera.pitch + Math.PI/200 * deltaX,2*Math.PI);
-
-	  var deltaY = newY - lastMouseY;
-	  this.camera.yaw = modf(camera.yaw + Math.PI/200 * deltaY,2*Math.PI);
-
+	  this.camera.pitch = modf(this.camera.pitch + Math.PI/200 * deltaX,2*Math.PI);
+	  this.camera.yaw = modf(this.camera.yaw + Math.PI/200 * deltaY,2*Math.PI);
 
 	  this.lastMouseX = newX;
 	  this.lastMouseY = newY;
 
-		// window.requestAnimationFrame(render, canvas);
+		// window.requestAnimationFrame(this.render);
 		this.requestAnimation();
 	}
 
 	handleTouchStart(event) {
-		if(event.touches.length == 1) {
+		if(event.touches.length === 1) {
 			event.preventDefault();
 			this.changeViewTouch = event.touches[0].identifier;
 			this.lastTouchX = event.touches[0].clientX;
 			this.lastTouchY = event.touches[0].clientY;
 		} else {
-			changeViewTouch=-1
+			this.changeViewTouch=-1
 		}
 
 		// console.log("down");
 	}
-
 
 	handleTouchEnd(event) {
 	  this.changeViewTouch = -1;
 		// console.log("up");
 	}
 
-
-
 	handleTouchMove(event) {
 
 		// console.log("move touch "+changeViewTouch);
-	  if (this.changeViewTouch == -1) {
+	  if (this.changeViewTouch === -1) {
 	    return;
 	  }
 		//console.log(event.touches);
 		for (var t in event.touches) {
-			if (event.touches[t].identifier ==this. changeViewTouch) {
+			if (event.touches[t].identifier === this.changeViewTouch) {
 				event.preventDefault();
 			  var newX = event.touches[t].clientX;
 			  var newY = event.touches[t].clientY;
 
 				// console.log("moving");
 
-			  var deltaX = newX - lastTouchX;
+			  var deltaX = newX - this.lastTouchX;
 
-			  this.camera.pitch = modf(camera.pitch + Math.PI/200 * deltaX,2*Math.PI);
+			  this.camera.pitch = modf(this.camera.pitch + Math.PI/200 * deltaX,2*Math.PI);
 
-			  var deltaY = newY - lastTouchY;
-			  this.camera.yaw = modf(camera.yaw + Math.PI/200 * deltaY,2*Math.PI);
+			  var deltaY = newY - this.lastTouchY;
+			  this.camera.yaw = modf(this.camera.yaw + Math.PI/200 * deltaY,2*Math.PI);
 
 
 			  this.lastTouchX = newX;
 			  this.lastTouchY = newY;
-				window.requestAnimationFrame(render);
+				this.requestAnimation();
 			}
 		}
 
@@ -369,8 +431,9 @@ class GL3DView extends React.Component {
 	handleMouseWheel(event) {
 		var delta = Math.max(-1, Math.min(1, (event.deltaY)));
 
-		camera.dist += delta;
-		window.requestAnimationFrame(render, canvas);
+		this.camera.dist += delta;
+		this.requestAnimation();
+		event.preventDefault();
 	}
 
 	/*------------------------------------------------------------------------------
@@ -378,24 +441,12 @@ class GL3DView extends React.Component {
 	------------------------------------------------------------------------------*/
 }
 
-var mvMatrix;
-var pMatrix;
-var cubeModel;
-var gl;
-var canvas;
-
-var basicShader;
-var cubemapShader;
-
-var skyboxTexture;
-
-var vup = glm.vec3.fromValues(0.0,1.0,0.1);
-
-var cubeDist = 5.0
-
-var camera = {pos:glm.vec3.fromValues(0,0,0), dist:40, pitch:Math.PI/8, yaw:Math.PI*1/8};
-
-var mvmStack = [];
+GL3DView.defaultProps = {
+	axes:{x:"x",y:"y",z:"z"},
+	cubemap:{
+		left:cmleft,right:cmright,top:cmtop,bottom:cmbottom,front:cmfront,back:cmback
+	}
+}
 
 //var animPending = false
 
@@ -458,6 +509,14 @@ function modf(x,y) {
 	return x-y*Math.floor(x/y);
 }
 
+function colorToRgba(color) {
+	return glm.vec4.fromValues(
+		((color & 0xFF0000) >> 16)/255.0,
+		((color & 0x00FF00) >> 8)/255.0,
+		(color & 0x0000FF)/255.0,
+		1.0);
+}
+
 function initWebGL(canvas) {
 	// console.log("resize")
 	var gl = null;
@@ -487,8 +546,9 @@ function initWebGL(canvas) {
 
 
 function getShader(gl, file, type) {
-		return get(file).then((src) => new Promise((resolve,reject) => {
-			var shader = gl.createShader(type);
+		return fetch(file).then(res => res.text()).then(src => new Promise((resolve,reject) => {
+			// console.log(gl,type,src)
+			let shader = gl.createShader(type);
 			gl.shaderSource(shader, src);
 			gl.compileShader(shader);
 
@@ -757,7 +817,7 @@ function createSkybox(gl) {
 	return result;
 }
 
-function loadCubeMap(basePath,gl) {
+function loadCubeMap(cubemap,gl) {
 		// console.log("loadCubeMap")
 		var texture = gl.createTexture();
 		gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
@@ -766,22 +826,22 @@ function loadCubeMap(basePath,gl) {
 		gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
 		gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-		var faces = [["right.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_X],
-					 ["left.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_X],
-					 ["top.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_Y],
-					 ["bottom.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_Y],
-					 ["back.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_Z],
-					 ["front.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_Z]];
-		return Promise.all(faces.map(([file,face]) => { //Load all images
+		var faces = [["right", gl.TEXTURE_CUBE_MAP_POSITIVE_X],
+					 ["left", gl.TEXTURE_CUBE_MAP_NEGATIVE_X],
+					 ["top", gl.TEXTURE_CUBE_MAP_POSITIVE_Y],
+					 ["bottom", gl.TEXTURE_CUBE_MAP_NEGATIVE_Y],
+					 ["back", gl.TEXTURE_CUBE_MAP_POSITIVE_Z],
+					 ["front", gl.TEXTURE_CUBE_MAP_NEGATIVE_Z]];
+		return Promise.all(faces.map(([side,glface]) => { //Load all images
 			return new Promise(function(resolve, reject) {
 				let image = new Image();
 				image.onload = function () {
 					gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
 					gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-					gl.texImage2D(face, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+					gl.texImage2D(glface, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 					resolve();
 				}
-				image.src = basePath + '/' + file;
+				image.src = cubemap[side];
 			});
 		})).then(() => new Promise(function(resolve, reject) {
 			gl.generateMipmap(gl.TEXTURE_CUBE_MAP);

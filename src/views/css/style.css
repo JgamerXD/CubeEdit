@@ -1,0 +1,147 @@
+.contrast {
+  mix-blend-mode: difference;
+}
+
+.container {
+    padding: 10px;
+    position: relative;
+}
+
+.bordered {
+  border: 1px solid black;
+}
+
+.square {
+  position: relative;
+}
+
+.square:before {
+  content: "";
+  float: left;
+
+  /* essentially the aspect ratio. 100% means the
+  div will remain 100% as tall as it is wide, or
+  square in other words.  */
+  padding-bottom: 100%;
+}
+
+.square:after {
+  content: "";
+  display: block;
+  clear: both;
+}
+
+.content {
+  position: absolute;
+  box-sizing: content-box;
+  width: 100%;
+  height:100%;
+}
+.fill {
+  width: 100%;
+  height:100%;
+}
+
+.glCanvas {
+  border: 1px solid black
+}
+
+.buttonrange {
+  border: 1px solid darkGrey;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-rows: 1em 2em;
+  grid-template-columns: 3em 1fr 3em;
+  grid-column-gap: 5px;
+  grid-template-areas:
+    "bl lbl bm"
+    "bl sli bm";
+  align-items: stretch;
+  justify-items: stretch;
+}
+
+.buttonrange-less {
+  grid-area:bl;
+}
+.buttonrange-more {
+  grid-area:bm;
+}
+.buttonrange-label {
+  grid-area:lbl;
+}
+.buttonrange-slider {
+  grid-area:sli;
+  margin: 0 20px 0 20px;
+  width: 100%;
+  justify-self: center;
+  align-self: center;
+}
+.noSpinner {
+  appearance: textfield;
+}
+
+.bigbutton {
+  height: 100%;
+  /*width: 100%;*/
+  font-size: 2em;
+}
+
+.editview {
+  display: grid;
+  width: 100vw;
+  height:100vh;
+  align-items:stretch;
+  grid-template-rows: 100px 33vh auto auto auto auto;
+  grid-template-areas:
+    "h "
+    "3d"
+    "fr"
+    "egc"
+    "p"
+    "f"
+
+}
+.editgridContainer{
+  padding: 10px;
+}
+
+.header {
+  background-color: cadetBlue;
+  display: flex;
+  padding: 5px;
+  flex-grow: 1;
+  font-family: sans-serif;
+  font-size: 40px;
+  font-weight: bold;
+  align-items: center;
+}
+
+.header .svg-cubeedit {
+  width: 90px;
+  height: 90px;
+}
+
+@media only screen and (min-width: 768px) {
+  /* For desktop: */
+  .editview {
+    grid-template-columns: 40vw 1fr 20vw;
+    grid-template-rows: 70px 33vh auto 1fr;
+    grid-template-areas:
+      "h  h   h"
+      "3d egc p"
+      "fr egc p"
+      "f  f   f"
+  }
+  .header .svg-cubeedit {
+    width: 40px;
+    height: 40px;
+  }
+
+  .editgridContainer {
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+  /*flex: 1;*/
+}
