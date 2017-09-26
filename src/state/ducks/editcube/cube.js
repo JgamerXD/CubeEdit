@@ -127,7 +127,7 @@ export function cutFrame(cube,frameId) {
 
 export function insertNewFrame(cube,index) {
   let nf = newFrame(getSize(cube.size));
-  
+
   nf.id = nextFrameId(cube);
 
   let all = cube.frames.all.slice();
@@ -144,9 +144,9 @@ export function insertNewFrame(cube,index) {
 }
 
 export function duplicateFrame(cube,frameId) {
-  let dup = copyFrame(frameId);
+  let dup = copyFrame(cube,frameId);
   dup.id = nextFrameId(cube);
-  let index = cube.frames.all.indexOf(frameId);
+  let index = cube.frames.all.indexOf(frameId)+1;
 
   let all = cube.frames.all.slice();
   all.splice(index,0,dup.id)
@@ -172,7 +172,7 @@ export function newFrame(size) {
 }
 
 export function copyFrame(cube,frameId) {
-  return Array.from(cube.frames.byId[frameId].data);
+  return {data:Array.from(cube.frames.byId[frameId].data)};
 }
 
 export function setFrame(cube,frameId,frame){

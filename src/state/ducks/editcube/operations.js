@@ -9,8 +9,10 @@ export const newFrame = actions.newFrame;
 export const setFrame = actions.setFrame;
 export const cutFrame = (id) => (dispatch,getState) => {
   let state = getState();
-  if (selectors.getCurrentFrameId(state) === id) {
-      dispatch(actions.setEditFrameIndex(selectors.getFallbackFrame(state)));
+  let index = selectors.getCurrentFrameIndex(state);
+  let maxIndex = Math.max(0,selectors.numberOfFrames(state) - 2);
+  if (index > maxIndex) {
+      dispatch(actions.setEditFrameIndex(maxIndex));
   }
   dispatch(actions.cutFrame(id));
 }

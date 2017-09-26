@@ -9,18 +9,18 @@ import {FrameControlButtons,ButtonSlider} from './gui';
 const FrameControlComponent = props => {
   return <div className="container bordered">
     <ButtonSlider
-      name="Frame"
-      min="0"
-      value={props.currentFrameIndex}
-      max={props.numberOfFrames-1}
-      onValueChange={props.setCurrent} />
+      name  = "Frame"
+      min   = "0"
+      value = {props.currentFrameIndex}
+      max   = {props.numberOfFrames-1}
+      onValueChange = {props.setCurrent} />
     <FrameControlButtons
-      add={props.add}
-      reset={props.reset}
-      cut={props.cut}
-      duplicate={props.duplicate}
-      save={props.save}
-      load={props.load} />
+      add       = {e => props.add(e,props.currentFrameIndex)}
+      reset     = {e => props.reset(e,props.currentFrame)}
+      cut       = {e => props.cut(e,props.currentFrame)}
+      duplicate = {e => props.duplicate(e,props.currentFrame)}
+      save      = {props.save}
+      load      = {props.load} />
   </div>
 }
 
@@ -37,20 +37,20 @@ const mapStateToProps = state => {
 const mapDispatchToProps = (dispatch,ownProps) => {
   console.log(ownProps);
   return {
-    setCurrent: i => {
-      dispatch(cube.operations.setEditFrameIndex(i));
+    setCurrent: frameIndex => {
+      dispatch(cube.operations.setEditFrameIndex(frameIndex));
     },
-    add: e => {
-      dispatch(cube.operations.newFrame(ownProps.currentFrameIndex));
+    add: (e,frameIndex) => {
+      dispatch(cube.operations.newFrame(frameIndex));
     },
-    duplicate: e => {
-      dispatch(cube.operations.duplicateFrame(ownProps.currentFrame));
+    duplicate:( e,frameId) => {
+      dispatch(cube.operations.duplicateFrame(frameId));
     },
-    cut: e => {
-      dispatch(cube.operations.cutFrame(ownProps.currentFrame));
+    cut: (e,frameId) => {
+      dispatch(cube.operations.cutFrame(frameId));
     },
-    reset: e => {
-      dispatch(cube.operations.clearFrame(ownProps.currentFrame));
+    reset: (e,frameId) => {
+      dispatch(cube.operations.clearFrame(frameId));
     },
     load: e => {
       console.log("load cube");
