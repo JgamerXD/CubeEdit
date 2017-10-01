@@ -1,5 +1,10 @@
 import * as Cube from './Cube';
-import {siren4x4internal as siren, test as t} from 'utils/testcube';
+import {siren4x4internal as siren,
+  siren4x4denorm as siren_D,
+  approach4x4internal as approach,
+  approach4x4denorm as approach_D,
+  test as t
+ } from 'utils/testcube';
 
 let c = Cube.newCube(2,2,2,4);
 
@@ -34,9 +39,28 @@ test("new cube", () => {
   		},
   		"all":[0],
       "lastId":0
-  	}
+    },
+    edit:{
+      x:0,
+      y:0,
+      z:0,
+      primaryColor:1,
+      secondaryColor:0,
+      currentColormap:0,
+      currentFrame:0
+    }
+
   });
 });
+
+test("normalize cube",()=>{
+  expect(Cube.normalize(siren_D)).toEqual(siren);
+  expect(Cube.normalize(approach_D)).toEqual(approach);
+})
+test("denormalize cube",()=>{
+  expect(Cube.denormalize(siren)).toEqual(siren_D);
+  expect(Cube.denormalize(approach)).toEqual(approach_D);
+})
 
 test("new colormap",()=>{
   expect(Cube.newColormap(5))
