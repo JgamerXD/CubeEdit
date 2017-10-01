@@ -41,7 +41,7 @@ const mapDispatchToProps = (dispatch,ownProps) => {
       dispatch(cube.operations.setEditFrameIndex(frameIndex));
     },
     add: (e,frameIndex) => {
-      dispatch(cube.operations.newFrame(frameIndex));
+      dispatch(cube.operations.newFrame(frameIndex+1));
     },
     duplicate:( e,frameId) => {
       dispatch(cube.operations.duplicateFrame(frameId));

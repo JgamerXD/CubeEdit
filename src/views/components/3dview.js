@@ -37,7 +37,8 @@ export default class GL3DView extends React.Component {
 		this.renderGL = this.renderGL.bind(this);
 		this.setMatrixUniforms = this.setMatrixUniforms.bind(this);
 		this.requestAnimation = function() {
-			window.requestAnimationFrame(this.renderGL);
+			if(window.requestAnimationFrame)
+				window.requestAnimationFrame(this.renderGL);
 		}.bind(this)
 
 
@@ -61,7 +62,7 @@ export default class GL3DView extends React.Component {
 
 	render() {
 
-		this.requestAnimation();
+		// this.requestAnimation();
 		return <canvas ref="canvas" className="glCanvas fill"></canvas>;
 	}
 
@@ -69,6 +70,7 @@ export default class GL3DView extends React.Component {
 		this.gl = this.startGL(this.refs.canvas);
 		this.resize(this.refs.canvas);
 		this.renderGL();
+		this.requestAnimation();
 	}
 
 
