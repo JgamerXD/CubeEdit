@@ -56,6 +56,59 @@ export function newCube(sx,sy,sz,scmap = 16) {
   return cube;
 }
 
+export function normalize(cube){
+  let ecube = {
+    size:{x:cube.size[0],y:cube.size[1],z:cube.size[1]},
+    frames:{
+      byId:{},
+      all:[],
+      lastId:0
+    },
+    cmapsize:cube.cmapsize,
+    colormaps:{
+      byId:{},
+      all:[],
+      lastId:0
+    },
+    edit:{
+      x:0,
+      y:0,
+      z:0,
+      primaryColor:1,
+      secondaryColor:0,
+      currentColormap:0,
+      currentFrame:0
+    }
+  };
+
+
+  //frames
+  for (let i = 0; i < cube.frames.length; i++) {
+    let fr = {id:i,data:cube.frames[i]};
+    ecube.frames.byId[i]=fr;
+    ecube.frames.all.push(i);
+    ecube.frames.lastId=i;
+  }
+  //colormaps
+  for (let i = 0; i < cube.colormaps.length; i++) {
+    let cm = {id:i,data:cube.colormaps[i]};
+    ecube.colormaps.byId[i]=cm;
+    ecube.colormaps.all.push(i);
+    ecube.colormaps.lastId=i;
+  }
+  return ecube;
+}
+
+export function denormalize(ecube) {
+  return {
+    size:[ecube.size.x,ecube.size.y,ecube.size.z],
+    cmapsize:ecube.cmapsize,
+    colormaps:ecube.colormaps.all.map( id => ecube.colormaps.byId[id].data),
+    frames:ecube.frames.all.map( id => ecube.frames.byId[id].data)
+  }
+
+}
+
 export function getIndex(size,x,y,z) {
   return x + size.x*z + size.z*size.x*y; //Swapped y and z to match Hardware TODO: make option
 }
@@ -164,12 +217,18 @@ export function duplicateFrame(cube,frameId) {
   };
 }
 
-export function newFrame(size) {
+export function newFrame(size,cms) {
   return {
-    data:(new Array(size)).fill(0)
+    data:([... new Array(size)].map(() => {
+      return Math.floor(Math.random()*16);
+    }))
   }
-
 }
+// export function newFrame(size) {
+//   return {
+//     data:(new Array(size)).fill(0)
+//   }
+// }
 
 export function copyFrame(cube,frameId) {
   return {data:Array.from(cube.frames.byId[frameId].data)};
