@@ -43,14 +43,14 @@ const mapDispatchToProps = dispatch => {
     onMouseDownCallback: (e,x,y,z) => {
       switch (e.button) {
         case 0: //leftclick
-          console.log("leftclick",x,y,z);
+          // console.log("leftclick",x,y,z);
           dispatch(operations.drawWithPrimaryColor(x,y,z))
           break;
         case 1: //middleclick
-          console.log("middleclick",x,y,z);
+          // console.log("middleclick",x,y,z);
           break;
         case 2://rightclick
-          console.log("rightclick",x,y,z);
+          // console.log("rightclick",x,y,z);
           dispatch(operations.drawWithSecondaryColor(x,y,z))
           break;
         default:

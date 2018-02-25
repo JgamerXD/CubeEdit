@@ -9,7 +9,7 @@ export const shapes = {
 }
 
 export function draw(size,frame,pos,color) {
-  console.log(pos);
+  // console.log(pos);
   frame[Cube.getIndex(size,pos[0],pos[1],pos[2])]=color;
 };
 

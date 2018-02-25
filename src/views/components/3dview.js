@@ -93,7 +93,7 @@ export default class GL3DView extends React.Component {
 		this.initBasicShader(gl).then(shader => {
 			this.basicShader = shader;
 			this.basicShaderReady = true;
-			console.log("basic shader ready");
+			// console.log("basic shader ready");
 			window.requestAnimationFrame(this.renderGL);
 		});
 
@@ -105,7 +105,7 @@ export default class GL3DView extends React.Component {
 			this.skyboxTexture = cubemap;
 			this.cubemapShader = shader;
 			this.skyboxReady = true;
-			console.log("cubemap + shader ready");
+			// console.log("cubemap + shader ready");
 			window.requestAnimationFrame(this.renderGL);
 		})
 
