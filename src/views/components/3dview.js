@@ -73,6 +73,10 @@ export default class GL3DView extends React.Component {
 		this.requestAnimation();
 	}
 
+	componentDidUpdate() {
+		this.requestAnimation();
+	}
+
 
 	startGL(canvas) {
 		//console.log($("#basic-fs")[0].type);
